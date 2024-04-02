@@ -92,28 +92,54 @@ exports.createProject = async(req, res) => {
         stage:[],
         projectId:createdProject.id
     });
+    // const stage1 = await Stage.create({
+    //     name:"形成問題",
+    //     sub_stage:[],
+    //     processId:process.id
+    // });
+    // const stage2 = await Stage.create({
+    //     name:"規劃",
+    //     sub_stage:[],
+    //     processId:process.id
+    // });
+    // const stage3 = await Stage.create({
+    //     name:"執行",
+    //     sub_stage:[],
+    //     processId:process.id
+    // });
+    // const stage4 = await Stage.create({
+    //     name:"形成結論",
+    //     sub_stage:[],
+    //     processId:process.id
+    // });
+    // const stage5 = await Stage.create({
+    //     name:"報告與展示",
+    //     sub_stage:[],
+    //     processId:process.id
+    // });
+
     const stage1 = await Stage.create({
-        name:"形成問題",
+        name:"定標",
         sub_stage:[],
         processId:process.id
     });
     const stage2 = await Stage.create({
-        name:"規劃",
+        name:"擇策",
         sub_stage:[],
         processId:process.id
     });
     const stage3 = await Stage.create({
-        name:"執行",
+        name:"監評",
         sub_stage:[],
         processId:process.id
     });
     const stage4 = await Stage.create({
-        name:"形成結論",
+        name:"調節",
         sub_stage:[],
         processId:process.id
     });
     const stage5 = await Stage.create({
-        name:"報告與展示",
+        name:"學習歷程",
         sub_stage:[],
         processId:process.id
     });
@@ -127,7 +153,7 @@ exports.createProject = async(req, res) => {
 
     const sub_stage_1_1 = await Sub_stage.create({
         name:"提出研究主題",
-        description:"在 1-1 的階段中，提出你感興趣的主題，並提供完整資訊分享給同組的夥伴，並再與小組討論完後，繳交上傳。",
+        description:"這個階段的目標是為了確定研究的主題範圍，並確保主題具有研究價值和實務意義。在這個階段你可以先進行文獻回顧，識別研究領域中的空白或爭議點，再透過討論和思考縮小研究範圍，最後再和小組成員一起確定出一個具體的研究主題。",
         userSubmit:{
             "提議主題":"input",
             "主題來源":"input",
@@ -138,7 +164,7 @@ exports.createProject = async(req, res) => {
     })
     const sub_stage_1_2 = await Sub_stage.create({
         name:"提出研究目的",
-        description:"根據剛剛所想的研究主題，蒐集相關資料，並和組員討論出合適的題目。",
+        description:"這個階段的目標是為了明確研究旨在解決的問題或達到的效果，闡述研究的重要性。在這個階段你可以基於研究主題去細化研究的目標與期望成果，其中也包括了理論與實務層面的貢獻。",
         userSubmit:{
             "提議題目":"input",
             "提議原因":"textarea",
@@ -147,26 +173,26 @@ exports.createProject = async(req, res) => {
         },
         stageId:stage1.id
     });
-    await Stage.findByPk(stage1.id)
-    .then(stage1 =>{
-        stage1.sub_stage = [sub_stage_1_1.id, sub_stage_1_2.id];
-        return stage1.save();
-    })
-    .catch(err => console.log(err));
-
-    const sub_stage_2_1 = await Sub_stage.create({
+    const sub_stage_1_3 = await Sub_stage.create({
         name:"提出研究問題",
-        description:"接下來，你們要提出研究問題作為你們研究的目標，選擇「先做發散性思考」，還是「先做嘗試性實驗」。「先做發散性思考」請思考5W1H的方式，與誰有關?什麼時候?什麼地點?什麼事物?為什麼?如何?確認研究問題；「先做嘗試性實驗」先將已有的構想，簡略再想法牆上的說明實驗規劃，會用到那些研究器材、實驗步驟、記錄那些資料，在規劃完後，照著構想做幾次實驗，確認可行性，再進行「先做發散性思考」，確認研究問題。最後與小組成員討論出研究可能之相關變因與研究問題",
+        description:"這個階段的目標是為了定義清晰、具體的研究問題，指導研究的方向與範圍。在這個階段你可以根據研究目的，提出可操作的研究問題，同時確保問題具有明確性和可研究性。",
         userSubmit:{
             "研究假設":"textarea",
             "對應的研究便因":"textarea",
             "附加檔案":"file",
         },
-        stageId:stage2.id
+        stageId:stage1.id
     });
-    const sub_stage_2_2 = await Sub_stage.create({
+    await Stage.findByPk(stage1.id)
+    .then(stage1 =>{
+        stage1.sub_stage = [sub_stage_1_1.id, sub_stage_1_2.id, sub_stage_1_3.id];
+        return stage1.save();
+    })
+    .catch(err => console.log(err));
+
+    const sub_stage_2_1 = await Sub_stage.create({
         name:"訂定研究構想表",
-        description:"請跟小組進行討論，填寫實驗所需使用的研究材料、研究步驟，以及記錄方式。",
+        description:"這個階段的目標是為了建立研究架構和方法論基礎，明確研究的理論背景和假設。在這個階段你可以一步步地發展出研究概念框架，其中包括了研究假設、變數定義和預期的研究模型。",
         userSubmit:{
             "研究材料與工具":"textarea",
             "研究步驟":"textarea",
@@ -175,17 +201,17 @@ exports.createProject = async(req, res) => {
         },
         stageId:stage2.id
     });
-    const sub_stage_2_3 = await Sub_stage.create({
+    const sub_stage_2_2 = await Sub_stage.create({
         name:"設計研究記錄表格",
-        description:"瀏覽上一階段所訂定研究構想表，與小組討論出合適的紀錄表格。",
+        description:"這個階段的目標是為了為收集資料和記錄研究過程提供標準化工具。在這個階段你可以根據研究問題和方法，設計資料收集表格和記錄表，包括但不限於問卷、訪談記錄和實驗資料表。",
         userSubmit:{
             "紀錄表格":"file"
         },
         stageId:stage2.id
     });
-    const sub_stage_2_4 = await Sub_stage.create({
-        name:"進行嘗試性研究",
-        description:"請先瀏覽研究構想後，與小組討論嘗試性實驗的結果，紀錄實驗結果。",
+    const sub_stage_2_3 = await Sub_stage.create({
+        name:"規劃研究排程",
+        description:"這個階段的目標是為了合理安排研究活動的時間表，確保研究工作有秩序地進行。在這個階段你可以制定詳細的研究計畫和時間線，包括各階段的開始和結束日期，以及關鍵活動和里程碑。",
         userSubmit:{
             "研究成果":"input",
             "結果說明":"textarea",
@@ -197,14 +223,14 @@ exports.createProject = async(req, res) => {
 
     await Stage.findByPk(stage2.id)
     .then(stage2 =>{
-        stage2.sub_stage = [sub_stage_2_1.id, sub_stage_2_2.id, sub_stage_2_3.id, sub_stage_2_4.id];
+        stage2.sub_stage = [sub_stage_2_1.id, sub_stage_2_2.id, sub_stage_2_3.id];
         return stage2.save();
     })
     .catch(err => console.log(err));
 
     const sub_stage_3_1 = await Sub_stage.create({
         name:"進行嘗試性研究",
-        description:"請先瀏覽研究構想後，與小組討論嘗試性實驗的結果，可以將過程撰寫在實驗日誌中。",
+        description:"這個階段的目標是為了透過初步的研究活動，驗證研究方法的可行性和有效性。在這個階段你可以在小範圍內實施研究設計，收集和分析數據，評估研究方法和工具的適用性。",
         userSubmit:{
             "實驗記錄":"file",
         },
@@ -212,7 +238,7 @@ exports.createProject = async(req, res) => {
     });
     const sub_stage_3_2 = await Sub_stage.create({
         name:"分析資料與繪圖",
-        description:"請先瀏覽研究構想後，與小組討論實驗分析與圖表並上傳資料分析。",
+        description:"這個階段的目標是為了對收集到的資料進行系統性分析，透過圖表形式展示研究結果。在這個階段你可以使用統計軟體或手動方法對資料進行分析，包括描述性統計、相關性分析等，並製作圖表來直觀展示分析結果。",
         userSubmit:{
             "資料分析檔案":"file",
         },
@@ -220,7 +246,7 @@ exports.createProject = async(req, res) => {
     });
     const sub_stage_3_3 = await Sub_stage.create({
         name:"撰寫研究成果",
-        description:"請先瀏覽研究構想、實驗日誌與實驗分析後，與小組討論並撰寫成word檔案上傳。",
+        description:"這個階段的目標是為了詳細記錄研究過程和發現，包括資料分析、討論和結論。在這個階段你可以整理分析數據，撰寫研究報告的各個部分，包括引言、方法、結果、討論和結論。",
         userSubmit:{
             "研究成果":"input",
             "結果說明":"textarea",
@@ -238,25 +264,32 @@ exports.createProject = async(req, res) => {
     .catch(err => console.log(err));
 
     const sub_stage_4_1 = await Sub_stage.create({
-        name:"進行研究討論",
-        description:"進行一般性討論，針對實驗結果做討論，探討背後隱含的科學原理，再進行綜合性討論，針對有些實驗結果彼此之間的因果關係，需要放在一起討論才有意義。",
+        name:"檢視研究進度",
+        description:"這個階段的目標是為了定期回顧研究工作的進展，確保研究按計畫進行。在這個階段你可以定期檢視研究行程和成果，評估是否需要調整研究方向或方法。",
         userSubmit:{
             "研究討論":"file",
         },
         stageId:stage4.id
     });
     const sub_stage_4_2 = await Sub_stage.create({
-        name:"撰寫研究結論",
-        description:"根據研究結果與研究討論的內容提出可能的研界結論，並與小組成員一同進行討論。",
+        name:"進行研究討論",
+        description:"這個階段的目標是為了與導師、同儕或研究小組討論研究發現和問題，以獲得回饋和建議哦。在這個階段你可以組織研究討論會，呈現研究結果，收集與整合回饋意見，對研究進行深入分析與完善。",
         userSubmit:{
             "研究結論":"file",
         },
         stageId:stage4.id
     });
-
+    const sub_stage_4_3 = await Sub_stage.create({
+        name:"撰寫研究結論",
+        description:"這個階段的目標是為了總結研究的主要發現，討論研究的意義、限制和未來研究的方向。在這個階段你可以基於研究結果和討論，撰寫結論部分，明確指出研究的貢獻和後續研究的建議。",
+        userSubmit:{
+            "研究結論":"file",
+        },
+        stageId:stage4.id
+    });
     await Stage.findByPk(stage4.id)
     .then(stage4 =>{
-        stage4.sub_stage = [sub_stage_4_1.id, sub_stage_4_2.id];
+        stage4.sub_stage = [sub_stage_4_1.id, sub_stage_4_2.id, sub_stage_4_3.id];
         return stage4.save();
     })
     .catch(err => console.log(err));
