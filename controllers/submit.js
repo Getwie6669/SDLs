@@ -12,19 +12,33 @@ exports.createSubmit = async(req, res) => {
         return res.status(404).send({message: 'please fill in the form !'})
     }
     if(req.files.length > 0){
-        req.files.map(item => {
-            const filename = item.filename
-            Submit.create({
-                stage: `${currentStageInt}-${currentSubStageInt}`,
-                content: content,
-                projectId: projectId,
-                filename:filename
-            })
-            .catch(err => {
-                console.log(err)
-                return res.status(500).send({message: 'create failed!'});
-            });
-        })
+        // req.files.map(item => {
+        //     const filename = item.filename
+        //     Submit.create({
+        //         stage: `${currentStageInt}-${currentSubStageInt}`,
+        //         content: content,
+        //         projectId: projectId,
+        //         filename:filename
+        //     })
+        //     .catch(err => {
+        //         console.log(err)
+        //         return res.status(500).send({message: 'create failed!'});
+        //     });
+        // })
+        try {
+            await Promise.all(req.files.map(item => {
+                const filename = item.filename;
+                return Submit.create({
+                    stage: `${currentStageInt}-${currentSubStageInt}`,
+                    content: content,
+                    projectId: projectId,
+                    filename: Array.from(new Uint8Array(filename))
+                });
+            }));
+        } catch(err) {
+            console.log(err);
+            return res.status(500).send({message: 'create failed!'});
+        }
     }else{
         await Submit.create({
             stage: `${currentStageInt}-${currentSubStageInt}`,
