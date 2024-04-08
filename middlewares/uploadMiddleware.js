@@ -6,8 +6,10 @@ const storage = multer.diskStorage({
         cb(null, "daily_file")
     },
     filename: ( req, file, cb) =>{
-        fixedFileName = Buffer.from(file.originalname, 'latin1').toString("utf-8");
-        return cb( null, Date.now() + path.extname(fixedFileName))
+        const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        cb(null, fileName);
+        // fixedFileName = Buffer.from(file.originalname, 'latin1').toString("utf-8");
+        // return cb( null, Date.now() + path.extname(fixedFileName))
     }
 })
 

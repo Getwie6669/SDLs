@@ -10,7 +10,11 @@ const Submit = sequelize.define('submit', {
         type: DataTypes.JSON,
         allowNull:false,
     },
-    filename:{
+    fileData:{
+        type: DataTypes.BLOB,
+        allowNull:true,
+    },
+    fileName:{
         type: DataTypes.TEXT,
         allowNull:true,
     },
