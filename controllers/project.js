@@ -37,12 +37,6 @@ exports.getAllProject = async (req, res) => {
         .catch(err => console.log(err));
 
 
-    // user.getProject()
-    //     .then(result =>{
-    //         console.log(result);
-    //         res.status(200).json({ project: result})
-    //     })
-    //     .catch(err => console.log(err));
 }
 
 exports.createProject = async (req, res) => {

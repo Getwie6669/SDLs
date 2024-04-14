@@ -4,6 +4,7 @@ const Project = require('./project');
 const Threads = require('./threads');
 const Threads_Message = require('./threads_message');
 const daily_personal = require('./daily_personal');
+const Chatroom_message = require('./chatroom_message');
 
 const User = sequelize.define('user', {
     username: {
@@ -30,7 +31,7 @@ Project.belongsToMany(User, {through:"User_Projects"});
 
 User.hasMany(Threads_Message);
 User.hasMany(Threads);
-
+// User.hasMany(Chatroom_message);
 User.hasMany(daily_personal);
 
 module.exports = User;

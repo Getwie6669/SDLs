@@ -14,6 +14,8 @@ const Column = require('./models/column');
 const Kanban = require('./models/kanban');
 const Node = require('./models/node');
 const Node_relation = require('./models/node_relation');
+const Chatroom_message = require('./models/chatroom_message');
+
 const { rm } = require('fs');
 
 const io = new Server(server, {
@@ -40,10 +42,21 @@ io.on("connection", (socket) => {
         console.log(`${socket.id} join room ${data}`);
     })
     //send message
-    socket.on("send_message", (data) => {
+    socket.on("send_message", async (data) => {
         console.log(data);
+        try {
+            // 存储消息到数据库
+            await Chatroom_message.create({
+                message: data.message,
+                author : data.author,
+                userId: data.creator, // 假设 data.author 存储的是用户 ID
+                projectId: data.room // 假设 data.room 存储的是项目 ID
+            });
+        } catch (error) {
+            console.error("保存消息时出错：", error);
+        }
         socket.to(data.room).emit("receive_message", data);
-    })
+    });
     //create card
     socket.on("taskItemCreated", async (data) => {
         try {
@@ -109,10 +122,10 @@ io.on("connection", (socket) => {
     //create column
     socket.on("ColumnCreated", async (data) => {
         try {
-            const { projectId,newGroupName } = data;
+            const { projectId, newGroupName } = data;
             const createColumn = await Column.create({
-                name: newGroupName, 
-                task:[], 
+                name: newGroupName,
+                task: [],
                 kanbanId: projectId
             })
 
@@ -125,14 +138,14 @@ io.on("connection", (socket) => {
             console.error("处理 ColumnCreated 时出错：", error);
         }
     })
-//drag column
+    //drag column
     socket.on("columnOrderChanged", async (data) => {
         const { sourceIndex, destinationIndex, kanbanData } = data;
-    
+
         // 生成新的列顺序
         const movedColumn = kanbanData.splice(sourceIndex, 1)[0];
         kanbanData.splice(destinationIndex, 0, movedColumn);
-    
+
         // 更新数据库中的列顺序，这里只是一个示例逻辑
         // 实际的实现取决于你的数据库结构和ORM库
         for (let i = 0; i < kanbanData.length; i++) {
@@ -142,12 +155,10 @@ io.on("connection", (socket) => {
                 }
             });
         }
-    
+
         // 通知所有客户端更新列的顺序
         io.sockets.emit("columnOrderUpdated", kanbanData);
     });
-
-    
     //create nodes
     socket.on("nodeCreate", async (data) => {
         const { title, content, ideaWallId, owner, from_id } = data;
@@ -166,7 +177,6 @@ io.on("connection", (socket) => {
         }
         io.sockets.emit("nodeUpdated", createdNode);
     })
-
     socket.on("nodeUpdate", async (data) => {
         const { title, content, id } = data;
         const createdNode = await Node.update(
@@ -193,6 +203,8 @@ io.on("connection", (socket) => {
         );
         io.sockets.emit("nodeUpdated", deleteNode);
     })
+    //chatroom
+
     socket.on("disconnect", () => {
         console.log(`${socket.id} a user disconnected`)
     });
@@ -207,6 +219,7 @@ app.use('/node', require('./routes/node'))
 app.use('/daily', require('./routes/daily'))
 app.use('/submit', require('./routes/submit'))
 app.use('/stage', require('./routes/stage'))
+app.use('/chatroom', require('./routes/chatroom'))
 
 //error handling
 app.use((error, req, res, next) => {
@@ -224,7 +237,3 @@ sequelize.sync({ alter: true })  //{force:true} {alter:true}
     })
     .catch(err => console.log(err));
 
-
-// server.listen(3000, () => {
-//     console.log('server is running');
-// });

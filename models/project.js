@@ -36,7 +36,7 @@ const Project = sequelize.define('project', {
     }
 });
 
-Project.hasMany(Chatroom_message);
+// Project.hasMany(Chatroom_message);
 Project.hasMany(Tag);
 Project.hasMany(Idea_wall);
 Project.hasMany(Process);
