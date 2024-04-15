@@ -10,6 +10,10 @@ const Daily_personal = sequelize.define('daily_personal', {
         type: DataTypes.TEXT,
         allowNull:false,
     },
+    fileData:{
+        type: DataTypes.BLOB,
+        allowNull:true,
+    },
     filename:{
         type: DataTypes.TEXT,
         allowNull:true,
