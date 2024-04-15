@@ -3,6 +3,7 @@ const express = require('express');
 const sequelize = require('./util/database');
 const bodyParser = require('body-parser');
 const cors = require("cors");
+const { Op } = require('sequelize');
 
 const app = express();
 const http = require('http');
@@ -91,7 +92,7 @@ io.on("connection", (socket) => {
     //Delete card
     socket.on("cardDelete", async (data) => {
         const { cardData, index, columnIndex, kanbanData } = data;
-    
+
         // Step 1: Retrieve the column and update it
         try {
             const column = await Column.findOne({
@@ -101,22 +102,22 @@ io.on("connection", (socket) => {
             });
             console.log(cardData)
 
-            console.log("column",column)
+            console.log("column", column)
             if (column) {
                 // Filter out the task ID from the tasks array
-                
+
                 const updatedTasks = column.task.filter(taskId => taskId !== cardData.id);
-    
+
                 // Update the column with the new tasks array
                 await column.update({ task: updatedTasks });
-    
+
                 // Step 2: Destroy the task in the Task table after updating the column
                 const updateTask = await Task.destroy({
                     where: {
                         id: cardData.id
                     }
                 });
-    
+
                 // Emit the updated task information to all clients
                 io.sockets.emit("taskItem", updateTask);
             } else {
@@ -180,25 +181,88 @@ io.on("connection", (socket) => {
     })
     //drag column
     socket.on("columnOrderChanged", async (data) => {
-        const { sourceIndex, destinationIndex, kanbanData } = data;
+        const { kanbanData, kanbanId } = data;
 
-        // 生成新的列顺序
-        const movedColumn = kanbanData.splice(sourceIndex, 1)[0];
-        kanbanData.splice(destinationIndex, 0, movedColumn);
+        // 发送更新事件以及打印日志
+        io.sockets.emit("columnOrderUpdated", kanbanData);
+        console.log("kanbanData", kanbanData);
+        console.log("kanbanId", kanbanId);
 
-        // 更新数据库中的列顺序，这里只是一个示例逻辑
-        // 实际的实现取决于你的数据库结构和ORM库
-        for (let i = 0; i < kanbanData.length; i++) {
-            await Column.update({ order: i }, {
+        // 提取每个列的id到一个数组中
+        const columnIds = kanbanData.map(column => column.id);
+        console.log("Column IDs:", columnIds);
+
+        // 更新Kanban表中的columns字段
+        try {
+            await Kanban.update({ column: columnIds }, {
                 where: {
-                    id: kanbanData[i].id
+                    id: kanbanId
                 }
             });
+            console.log("Columns updated successfully in Kanban table.");
+        } catch (error) {
+            console.error("Error updating columns in Kanban table:", error);
         }
-
-        // 通知所有客户端更新列的顺序
-        io.sockets.emit("columnOrderUpdated", kanbanData);
     });
+    //Delete column
+    socket.on("ColumnDelete", async (data) => {
+        const { columnData, kanbanId } = data;
+        console.log("columnData:", columnData);
+        console.log("kanbanId:", kanbanId);
+
+        try {
+            // Step 1: Update the Kanban table by removing the column ID from the columns array
+            const kanban = await Kanban.findOne({
+                where: {
+                    id: kanbanId
+                }
+            });
+
+            if (kanban) {
+                const updatedColumns = kanban.column.filter(columnId => columnId !== columnData.id);
+                await kanban.update({ column: updatedColumns });
+
+                // Step 2: Delete all tasks associated with the column
+                try {
+                    // 首先从 columnData.task 中提取所有任务的 ID
+                    const taskIds = columnData.task.map(task => task.id);
+
+                    // 然后使用这些 ID 来删除 Task 表中的相关记录
+                    const deleteTasks = await Task.destroy({
+                        where: {
+                            id: {
+                                [Op.in]: taskIds // 使用 Op.in 来指定一组 ID
+                            }
+                        }
+                    });
+
+                    console.log("已成功删除任务，任务ID:", taskIds);
+                } catch (error) {
+                    console.error("删除任务时发生错误:", error);
+                }
+
+                // Step 3: Delete the column itself
+                const deleteColumn = await Column.destroy({
+                    where: {
+                        id: columnData.id
+                    }
+                });
+
+                // Emit the updated kanban and column info to all clients
+                io.sockets.emit("columnDeleted", { kanbanId, updatedColumns, deletedColumnId: columnData.id });
+
+                console.log("Column and its tasks deleted successfully.");
+            } else {
+                console.error("Kanban not found with ID:", kanbanId);
+                // Optionally emit an error or handle it as necessary
+            }
+        } catch (error) {
+            console.error("Error handling column delete:", error);
+            // Handle errors and possibly emit error information to clients
+        }
+    });
+
+
     //create nodes
     socket.on("nodeCreate", async (data) => {
         const { title, content, ideaWallId, owner, from_id } = data;
