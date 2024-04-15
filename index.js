@@ -48,7 +48,7 @@ io.on("connection", (socket) => {
             // 存储消息到数据库
             await Chatroom_message.create({
                 message: data.message,
-                author : data.author,
+                author: data.author,
                 userId: data.creator, // 假设 data.author 存储的是用户 ID
                 projectId: data.room // 假设 data.room 存储的是项目 ID
             });
@@ -88,6 +88,46 @@ io.on("connection", (socket) => {
         });
         io.sockets.emit("taskItem", updateTask);
     })
+    //Delete card
+    socket.on("cardDelete", async (data) => {
+        const { cardData, index, columnIndex, kanbanData } = data;
+    
+        // Step 1: Retrieve the column and update it
+        try {
+            const column = await Column.findOne({
+                where: {
+                    id: columnIndex
+                }
+            });
+            console.log(cardData)
+
+            console.log("column",column)
+            if (column) {
+                // Filter out the task ID from the tasks array
+                
+                const updatedTasks = column.task.filter(taskId => taskId !== cardData.id);
+    
+                // Update the column with the new tasks array
+                await column.update({ task: updatedTasks });
+    
+                // Step 2: Destroy the task in the Task table after updating the column
+                const updateTask = await Task.destroy({
+                    where: {
+                        id: cardData.id
+                    }
+                });
+    
+                // Emit the updated task information to all clients
+                io.sockets.emit("taskItem", updateTask);
+            } else {
+                console.error('Column not found or column tasks undefined');
+                // Optionally emit an error or handle it as necessary
+            }
+        } catch (error) {
+            console.error('Error handling card delete:', error);
+            // Handle errors and possibly emit error information to clients
+        }
+    });
     //drag card
     socket.on("cardItemDragged", async (data) => {
         const { destination, source, kanbanData } = data;
@@ -177,6 +217,7 @@ io.on("connection", (socket) => {
         }
         io.sockets.emit("nodeUpdated", createdNode);
     })
+    //Update nodes
     socket.on("nodeUpdate", async (data) => {
         const { title, content, id } = data;
         const createdNode = await Node.update(
@@ -192,6 +233,7 @@ io.on("connection", (socket) => {
         );
         io.sockets.emit("nodeUpdated", createdNode);
     })
+    //Delete nodes
     socket.on("nodeDelete", async (data) => {
         const { id } = data;
         const deleteNode = await Node.destroy(
@@ -203,7 +245,6 @@ io.on("connection", (socket) => {
         );
         io.sockets.emit("nodeUpdated", deleteNode);
     })
-    //chatroom
 
     socket.on("disconnect", () => {
         console.log(`${socket.id} a user disconnected`)
