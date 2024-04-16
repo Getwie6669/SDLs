@@ -33,6 +33,11 @@ const Project = sequelize.define('project', {
     currentSubStage:{
         type:DataTypes.INTEGER,
         allowNull:true
+    },
+    ProjectEnd: {  // 新增的欄位
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: false  // 假設默認值為 false，意味著項目尚未完成
     }
 });
 

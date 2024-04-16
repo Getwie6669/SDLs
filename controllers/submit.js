@@ -81,6 +81,15 @@ exports.createSubmit = async(req, res) => {
             return res.status(500).send({message: 'create failed!'});
         })
     }else if(currentStageInt === process[0].stage.length && currentSubStageInt === stage[0].sub_stage.length){
+        // if (currentStageInt === 5 && currentSubStageInt === 5) {
+            await Project.update({
+                ProjectEnd: true
+            }, {
+                where: {
+                    id: projectId
+                }
+            });
+        // }
         return res.status(200).send({message: 'done'});
     }else{
         await Project.update({
@@ -144,20 +153,6 @@ exports.getAllSubmit = async(req, res) => {
     }
 };
 
-// exports.getAllSubmit = async(req, res) => {
-//     const { projectId } = req.query;
-//     const allSubmit = await Submit.findAll({
-//         where:{
-//             projectId:projectId
-//         }
-//     })
-//     if(allSubmit === null){
-//         res.status(500).send({message: 'get protfolio failed!'});
-//     }else{
-//         console.log("allSubmit",allSubmit)
-//         res.status(200).json(allSubmit)
-//     }
-// }
 exports.getSubmit = async(req, res) => {
     const submitId = req.params.submitId;
     console.log("submitId",submitId);
