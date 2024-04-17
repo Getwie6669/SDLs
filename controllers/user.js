@@ -13,6 +13,23 @@ exports.getUsers = (req, res) =>{
         .catch(err => console.log(err));
 }
 
+//get all teachers
+exports.getTeachers = (req, res) => {
+    User.findAll({
+        where: {
+            role: 'teacher' // 確保你的 User 模型中有一個名為 'role' 的欄位
+        }
+    })
+    .then(users => {
+        res.status(200).json({ user: users });
+    })
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    });
+}
+
+
 //get user by id
 exports.getUser = (req, res) =>{
     const userId = req.params.userId;
