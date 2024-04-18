@@ -261,8 +261,12 @@ io.on("connection", (socket) => {
             // Handle errors and possibly emit error information to clients
         }
     });
-
-
+    //Create Submit
+    socket.on('taskSubmitted', (data) => {
+        console.log('Task submitted:', data);
+        // 将事件广播到所有连接的客户端，除了发送消息的客户端
+        socket.broadcast.emit('refreshKanban', data);
+    });
     //create nodes
     socket.on("nodeCreate", async (data) => {
         const { title, content, ideaWallId, owner, from_id } = data;
