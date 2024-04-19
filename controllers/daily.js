@@ -94,6 +94,8 @@ exports.createTeamDaily = async (req, res) => {
     if (!title) {
         return res.status(404).send({ message: 'please enter title!' })
     }
+    const fs = require('fs').promises; // 使用 Promise 接口
+
     if (req.files.length > 0) {
         try {
             await Promise.all(req.files.map(async (item) => {
