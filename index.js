@@ -42,6 +42,11 @@ io.on("connection", (socket) => {
         socket.join(data);
         console.log(`${socket.id} join room ${data}`);
     })
+    //join project
+    socket.on("join_project", (data) => {
+        socket.join(data);
+        console.log(`${socket.id} join project ${data}`);
+    })
     //send message
     socket.on("send_message", async (data) => {
         console.log(data);
@@ -61,7 +66,7 @@ io.on("connection", (socket) => {
     //create card
     socket.on("taskItemCreated", async (data) => {
         try {
-            const { selectedcolumn, item, kanbanData } = data;
+            const { selectedcolumn, item, kanbanData, projectId } = data;
             const { title, content, labels, assignees } = item;
             const creatTask = await Task.create({
                 title: title,
@@ -74,24 +79,26 @@ io.on("connection", (socket) => {
             addIntoTaskArray.task = [...addIntoTaskArray.task, creatTask.id];
             await addIntoTaskArray.save()
                 .then(() => console.log("success"))
-            io.sockets.emit("taskItems", addIntoTaskArray);
+            // io.sockets.emit("taskItems", addIntoTaskArray);
+            io.to(projectId).emit("taskItems", addIntoTaskArray);
         } catch (error) {
             console.error("处理 taskItemCreated 时出错：", error);
         }
     })
     //update card
     socket.on("cardUpdated", async (data) => {
-        const { cardData, index, columnIndex, kanbanData } = data;
+        const { cardData, index, columnIndex, kanbanData, projectId } = data;
         const updateTask = await Task.update(cardData, {
             where: {
                 id: cardData.id
             }
         });
-        io.sockets.emit("taskItem", updateTask);
+        // io.sockets.emit("taskItem", updateTask);
+        io.to(projectId).emit("taskItem", updateTask);
     })
     //Delete card
     socket.on("cardDelete", async (data) => {
-        const { cardData, index, columnIndex, kanbanData } = data;
+        const { cardData, index, columnIndex, kanbanData, projectId } = data;
 
         // Step 1: Retrieve the column and update it
         try {
@@ -100,9 +107,7 @@ io.on("connection", (socket) => {
                     id: columnIndex
                 }
             });
-            console.log(cardData)
 
-            console.log("column", column)
             if (column) {
                 // Filter out the task ID from the tasks array
 
@@ -119,7 +124,9 @@ io.on("connection", (socket) => {
                 });
 
                 // Emit the updated task information to all clients
-                io.sockets.emit("taskItem", updateTask);
+                // io.sockets.emit("taskItem", updateTask);
+                io.to(projectId).emit("taskItem", updateTask);
+
             } else {
                 console.error('Column not found or column tasks undefined');
                 // Optionally emit an error or handle it as necessary
@@ -131,7 +138,7 @@ io.on("connection", (socket) => {
     });
     //drag card
     socket.on("cardItemDragged", async (data) => {
-        const { destination, source, kanbanData } = data;
+        const { destination, source, kanbanData, projectId } = data;
         const dragItem = {
             ...kanbanData[source.droppableId].task[source.index],
         };
@@ -141,7 +148,9 @@ io.on("connection", (socket) => {
             0,
             dragItem
         );
-        io.sockets.emit("dragtaskItem", kanbanData);
+        // io.sockets.emit("dragtaskItem", kanbanData);
+        io.to(projectId).emit("dragtaskItem", kanbanData);
+
         const sourceColumn = kanbanData[source.droppableId].task.map(item => item.id);
         const destinationColumn = kanbanData[destination.droppableId].task.map(item => item.id);
         await Column.update({ task: sourceColumn }, {
@@ -174,7 +183,9 @@ io.on("connection", (socket) => {
             addIntoColumnArray.column = [...addIntoColumnArray.column, createColumn.id];
             await addIntoColumnArray.save()
                 .then(() => console.log("success"))
-            io.sockets.emit("ColumnCreatedSuccess", addIntoColumnArray);
+            // io.sockets.emit("ColumnCreatedSuccess", addIntoColumnArray);
+            io.to(projectId).emit("ColumnCreatedSuccess", addIntoColumnArray);
+
         } catch (error) {
             console.error("处理 ColumnCreated 时出错：", error);
         }
@@ -184,13 +195,15 @@ io.on("connection", (socket) => {
         const { kanbanData, kanbanId } = data;
 
         // 发送更新事件以及打印日志
-        io.sockets.emit("columnOrderUpdated", kanbanData);
-        console.log("kanbanData", kanbanData);
-        console.log("kanbanId", kanbanId);
+        // io.sockets.emit("columnOrderUpdated", kanbanData);
+        io.to(kanbanId).emit("columnOrderUpdated", kanbanData);
+
+        // console.log("kanbanData", kanbanData);
+        // console.log("kanbanId", kanbanId);
 
         // 提取每个列的id到一个数组中
         const columnIds = kanbanData.map(column => column.id);
-        console.log("Column IDs:", columnIds);
+        // console.log("Column IDs:", columnIds);
 
         // 更新Kanban表中的columns字段
         try {
@@ -207,8 +220,8 @@ io.on("connection", (socket) => {
     //Delete column
     socket.on("ColumnDelete", async (data) => {
         const { columnData, kanbanId } = data;
-        console.log("columnData:", columnData);
-        console.log("kanbanId:", kanbanId);
+        // console.log("columnData:", columnData);
+        // console.log("kanbanId:", kanbanId);
 
         try {
             // Step 1: Update the Kanban table by removing the column ID from the columns array
@@ -249,7 +262,8 @@ io.on("connection", (socket) => {
                 });
 
                 // Emit the updated kanban and column info to all clients
-                io.sockets.emit("columnDeleted", { kanbanId, updatedColumns, deletedColumnId: columnData.id });
+                // io.sockets.emit("columnDeleted", { kanbanId, updatedColumns, deletedColumnId: columnData.id });
+                io.to(kanbanId).emit("columnDeleted", { kanbanId, updatedColumns, deletedColumnId: columnData.id });
 
                 console.log("Column and its tasks deleted successfully.");
             } else {
@@ -271,7 +285,7 @@ io.on("connection", (socket) => {
     });
     //create nodes
     socket.on("nodeCreate", async (data) => {
-        const { title, content, ideaWallId, owner, from_id } = data;
+        const { title, content, ideaWallId, owner, from_id, projectId } = data;
         const createdNode = await Node.create({
             title: title,
             content: content,
@@ -285,11 +299,13 @@ io.on("connection", (socket) => {
                 ideaWallId: ideaWallId
             })
         }
-        io.sockets.emit("nodeUpdated", createdNode);
+        // io.sockets.emit("nodeUpdated", createdNode);
+        io.to(projectId).emit("nodeUpdated", createdNode);
+
     })
     //Update nodes
     socket.on("nodeUpdate", async (data) => {
-        const { title, content, id } = data;
+        const { title, content, id, projectId } = data;
         const createdNode = await Node.update(
             {
                 title: title,
@@ -301,11 +317,13 @@ io.on("connection", (socket) => {
                 }
             }
         );
-        io.sockets.emit("nodeUpdated", createdNode);
+        // io.sockets.emit("nodeUpdated", createdNode);
+        io.to(projectId).emit("nodeUpdated", createdNode);
+
     })
     //Delete nodes
     socket.on("nodeDelete", async (data) => {
-        const { id } = data;
+        const { id, projectId } = data;
         const deleteNode = await Node.destroy(
             {
                 where: {
@@ -314,6 +332,9 @@ io.on("connection", (socket) => {
             }
         );
         io.sockets.emit("nodeUpdated", deleteNode);
+        // io.to(projectId).emit("nodeUpdated", deleteNode);
+
+
     })
 
     socket.on("disconnect", () => {
