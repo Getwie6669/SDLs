@@ -8,7 +8,7 @@ const Node = sequelize.define('node', {
     },
     content:{
         type: DataTypes.TEXT,
-        allowNull:false
+        allowNull:true
     },
     owner:{
         type: DataTypes.TEXT,

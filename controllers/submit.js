@@ -166,3 +166,35 @@ exports.getSubmit = async(req, res) => {
         // res.download(`./daily_file/${submit.fileData.filename}`)
     }
 }
+
+// exports.getProfolioSubmit = async(req, res) => {
+//     const { projectId } = req.query;
+//     try {
+//         const allSubmit = await Submit.findAll({
+//             where: {
+//                 projectId: projectId,
+//                 stage: ['5-1', '5-2', '5-3', '5-4', '5-5']  // Assuming 'stage' is the correct field and these are the valid values
+//             }
+//         });
+
+//         // Asynchronously convert all BLOB data, assuming this part works correctly in your current setup
+//         const submitsWithBase64 = await Promise.all(allSubmit.map(async (submit) => {
+//             // const submitJson = submit.toJSON();
+//             // if (submit.fileData) {
+//                 // Convert BLOB to Base64 string if needed, or handle as you see fit
+//                 // const base64Data = submit.fileData.toString('base64');
+//                 // return {
+//                 //     ...submitJson,
+//                 //     fileData: base64Data
+//                 // };
+//             // } else {
+//                 return submit.toJSON();
+//             // }
+//         }));
+
+//         res.status(200).json(submitsWithBase64);
+//     } catch (error) {
+//         console.error("Error in getAllSubmit:", error);
+//         res.status(500).send({ message: '获取项目失败！' });
+//     }
+// };
