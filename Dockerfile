@@ -1,4 +1,4 @@
-FROM node:21-alpine
+FROM node:20.7.0
 
 WORKDIR /sdl-backend-main
 
