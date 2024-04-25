@@ -366,7 +366,8 @@ app.use((error, req, res, next) => {
 sequelize.sync({ alter: true })  //{force:true} {alter:true}
     .then(result => {
         console.log("Database connected");
-        server.listen(3000);
+        
     })
     .catch(err => console.log(err));
 
+server.listen(3000);
