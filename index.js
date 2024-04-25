@@ -285,12 +285,13 @@ io.on("connection", (socket) => {
     });
     //create nodes
     socket.on("nodeCreate", async (data) => {
-        const { title, content, ideaWallId, owner, from_id, projectId } = data;
+        const { title, content, ideaWallId, owner, from_id, projectId, colorindex } = data;
         const createdNode = await Node.create({
             title: title,
             content: content,
             ideaWallId: ideaWallId,
-            owner: owner
+            owner: owner,
+            colorindex: colorindex
         });
         if (from_id) {
             const nodeRelation = await Node_relation.create({

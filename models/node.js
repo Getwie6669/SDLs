@@ -13,6 +13,10 @@ const Node = sequelize.define('node', {
     owner:{
         type: DataTypes.TEXT,
         allowNull:false
+    },
+    colorindex:{
+        type: DataTypes.INTEGER,
+        allowNull:true
     }
 });
 
