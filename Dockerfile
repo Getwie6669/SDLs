@@ -1,8 +1,10 @@
-FROM node:16-alpine
+FROM node:21-alpine
 
-WORKDIR /sdl-backend
+WORKDIR /sdl-backend-main
 
-COPY . .
+COPY package*.json ./
+
+COPY . /sdl-backend-main
 
 RUN npm install
 
