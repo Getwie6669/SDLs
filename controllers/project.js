@@ -44,8 +44,8 @@ exports.createProject = async (req, res) => {
     const projectdescribe = req.body.projectdescribe;
     const projectMentor = req.body.projectMentor;
     const referral_code = shortid.generate();
-    if (!projectName || !projectdescribe) {
-        return res.status(404).send({ message: '請輸入資料!' })
+    if (!projectName || !projectdescribe || !projectMentor) {
+        return res.status(404).send({ message: '請輸入完整資料!' })
     }
     const createdProject = await Project.create({
         name: projectName,
